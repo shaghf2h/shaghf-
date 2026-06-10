@@ -1,0 +1,340 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>رسالة سرية</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: #0a0a0a;
+    color: #eee;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+ 
+  /* ===== SCREEN 1: INCOMING CALL ===== */
+  #screen-call {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    animation: fadeIn 1s ease;
+  }
+  .avatar {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #555, #222);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    border: 3px solid #444;
+    animation: ring 1s infinite;
+  }
+  @keyframes ring {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.15); }
+    50% { box-shadow: 0 0 0 18px rgba(255,255,255,0); }
+  }
+  .caller-name { font-size: 1.4rem; color: #fff; letter-spacing: 1px; }
+  .caller-status { font-size: 0.85rem; color: #aaa; }
+  .online-dot { display: inline-block; width: 8px; height: 8px; background: #4ade80; border-radius: 50%; margin-left: 5px; animation: blink 1s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .answer-btn {
+    margin-top: 10px;
+    background: #4ade80;
+    color: #000;
+    border: none;
+    padding: 14px 40px;
+    border-radius: 99px;
+    font-size: 1rem;
+    cursor: pointer;
+    font-weight: bold;
+    transition: transform 0.1s;
+  }
+  .answer-btn:hover { transform: scale(1.05); }
+ 
+  /* ===== SCREEN 2: CHAT ===== */
+  #screen-chat {
+    display: none;
+    flex-direction: column;
+    width: 100%;
+    max-width: 420px;
+    height: 100vh;
+  }
+  .chat-header {
+    background: #1a1a1a;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid #222;
+  }
+  .chat-avatar { width: 42px; height: 42px; border-radius: 50%; background: #333; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
+  .chat-info .name { font-size: 0.95rem; color: #fff; }
+  .chat-info .status { font-size: 0.75rem; color: #4ade80; }
+  .messages {
+    flex: 1;
+    padding: 18px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .msg {
+    max-width: 75%;
+    padding: 10px 14px;
+    border-radius: 18px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    opacity: 0;
+    animation: popIn 0.4s forwards;
+  }
+  @keyframes popIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .msg.them { background: #1e1e1e; border: 1px solid #333; align-self: flex-start; border-bottom-right-radius: 4px; }
+  .msg.me { background: #7c3aed; align-self: flex-end; border-bottom-left-radius: 4px; }
+  .input-area {
+    padding: 12px 16px;
+    background: #111;
+    border-top: 1px solid #222;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  #userInput {
+    flex: 1;
+    background: #1e1e1e;
+    border: 1px solid #333;
+    border-radius: 99px;
+    padding: 10px 16px;
+    color: #eee;
+    font-size: 0.95rem;
+    font-family: inherit;
+    outline: none;
+  }
+  #sendBtn {
+    background: #7c3aed;
+    border: none;
+    border-radius: 50%;
+    width: 42px;
+    height: 42px;
+    color: white;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  #sendBtn:hover { transform: scale(1.08); }
+ 
+  /* ===== SARA/ALI BUTTON ===== */
+  #screen-question {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 28px;
+    text-align: center;
+    padding: 30px;
+    animation: fadeIn 0.5s ease;
+  }
+  #screen-question h2 { font-size: 1.4rem; color: #e879f9; }
+  .btn-yes {
+    background: #e879f9;
+    color: #fff;
+    border: none;
+    padding: 14px 44px;
+    border-radius: 99px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform 0.1s;
+    box-shadow: 0 0 20px rgba(232,121,249,0.4);
+  }
+  .btn-yes:hover { transform: scale(1.05); }
+  #noBtn {
+    position: absolute;
+    background: #333;
+    color: #aaa;
+    border: none;
+    padding: 12px 36px;
+    border-radius: 99px;
+    font-size: 1rem;
+    cursor: pointer;
+    font-family: inherit;
+    transition: top 0.2s, left 0.2s, right 0.2s, bottom 0.2s;
+  }
+ 
+  /* ===== SCREEN 4: LOVE LETTER ===== */
+  #screen-letter {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 30px 24px;
+    max-width: 480px;
+    gap: 18px;
+    animation: fadeIn 0.6s ease;
+  }
+  #screen-letter h2 { color: #f9a8d4; font-size: 1.3rem; }
+  #screen-letter p { color: #ddd; font-size: 1rem; line-height: 1.8; }
+  .roses { font-size: 2.5rem; letter-spacing: 6px; animation: floatRoses 2s ease-in-out infinite; }
+  @keyframes floatRoses { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+ 
+  /* ===== FALLING PETALS ===== */
+  .petal {
+    position: fixed;
+    top: -30px;
+    font-size: 1.4rem;
+    animation: fall linear infinite;
+    pointer-events: none;
+    z-index: 999;
+  }
+  @keyframes fall {
+    0% { top: -30px; opacity: 1; }
+    100% { top: 110vh; opacity: 0; }
+  }
+ 
+  @keyframes fadeIn { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+</style>
+</head>
+<body>
+ 
+<!-- SCREEN 1: INCOMING CALL -->
+<div id="screen-call">
+  <div class="avatar">🕵️</div>
+  <div class="caller-name">علي</div>
+  <div class="caller-status">
+    <span class="online-dot"></span> متصل الآن
+  </div>
+  <button class="answer-btn" onclick="answerCall()">✔ رد</button>
+</div>
+ 
+<!-- SCREEN 2: CHAT -->
+<div id="screen-chat">
+  <div class="chat-header">
+    <div class="chat-avatar">🕵️</div>
+    <div class="chat-info">
+      <div class="name">علي</div>
+      <div class="status">● متصل الآن</div>
+    </div>
+  </div>
+  <div class="messages" id="messages"></div>
+  <div class="input-area">
+    <input type="text" id="userInput" placeholder="اكتب رسالة..." onkeydown="if(event.key==='Enter') sendMessage()" />
+    <button id="sendBtn" onclick="sendMessage()">➤</button>
+  </div>
+</div>
+ 
+<!-- SCREEN 3: QUESTION -->
+<div id="screen-question">
+  <h2>💜 عندي سؤال مهم...</h2>
+  <p style="color:#aaa; font-size:0.95rem;">اختاري بصدق</p>
+  <button class="btn-yes" onclick="showLetter()">ساره تحبين علي ✅</button>
+  <button id="noBtn" onclick="runAway(event)">لا 🙅</button>
+</div>
+ 
+<!-- SCREEN 4: LOVE LETTER -->
+<div id="screen-letter">
+  <div class="roses">🌹🤍🌸💛🌷💙</div>
+  <h2>💌 رسالة من علي...</h2>
+  <p>
+    ساره... علي كلش يحبج وداايما يفكر بيج.<br><br>
+    من زمان جان يريد يكلج، بس ما عنده الجرأة...<br><br>
+    من اللحظة اللي التقيتو بيها، هو جان يفكر بيج ولحد هاي اللحظة.<br><br>
+    وانتي وجمالج وعطرج ما تكدرين تطلعين من باله.<br><br>
+    💜
+  </p>
+  <div class="roses">🌹🌼🌸🌻🌷</div>
+</div>
+ 
+<script>
+let chatStep = 0;
+let waitingForHello = false;
+ 
+function answerCall() {
+  document.getElementById('screen-call').style.display = 'none';
+  const chat = document.getElementById('screen-chat');
+  chat.style.display = 'flex';
+  setTimeout(() => addMsg('them', 'هلو... 👋'), 800);
+  waitingForHello = true;
+}
+ 
+function addMsg(who, text) {
+  const msgs = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = 'msg ' + who;
+  div.textContent = text;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+ 
+function sendMessage() {
+  const inp = document.getElementById('userInput');
+  const text = inp.value.trim();
+  if (!text) return;
+  addMsg('me', text);
+  inp.value = '';
+ 
+  if (waitingForHello) {
+    waitingForHello = false;
+    setTimeout(() => {
+      addMsg('them', 'اكو شخص كلش يحبج... اسمه علي 💜');
+      setTimeout(() => {
+        document.getElementById('screen-chat').style.display = 'none';
+        document.getElementById('screen-question').style.display = 'flex';
+        positionNoBtn();
+      }, 2000);
+    }, 900);
+  }
+}
+ 
+function positionNoBtn() {
+  const btn = document.getElementById('noBtn');
+  btn.style.position = 'absolute';
+  btn.style.bottom = '80px';
+  btn.style.left = '50%';
+  btn.style.transform = 'translateX(-50%)';
+}
+ 
+function runAway(e) {
+  const btn = document.getElementById('noBtn');
+  const maxX = window.innerWidth - 120;
+  const maxY = window.innerHeight - 60;
+  const x = Math.floor(Math.random() * maxX);
+  const y = Math.floor(Math.random() * maxY);
+  btn.style.transform = 'none';
+  btn.style.left = x + 'px';
+  btn.style.top = y + 'px';
+  btn.style.bottom = 'auto';
+}
+ 
+function showLetter() {
+  document.getElementById('screen-question').style.display = 'none';
+  document.getElementById('screen-letter').style.display = 'flex';
+  startPetals();
+}
+ 
+const petalEmojis = ['🌹','🌸','🌷','🌼','💛','🤍','❤️','💙'];
+function startPetals() {
+  for (let i = 0; i < 20; i++) {
+    setTimeout(() => spawnPetal(), i * 300);
+  }
+  setInterval(spawnPetal, 600);
+}
+function spawnPetal() {
+  const p = document.createElement('div');
+  p.className = 'petal';
+  p.textContent = petalEmojis[Math.floor(Math.random() * petalEmojis.length)];
+  p.style.left = Math.random() * 100 + 'vw';
+  p.style.animationDuration = (3 + Math.random() * 4) + 's';
+  p.style.fontSize = (1 + Math.random() * 1) + 'rem';
+  document.body.appendChild(p);
+  setTimeout(() => p.remove(), 8000);
+}
+</script>
+</body>
